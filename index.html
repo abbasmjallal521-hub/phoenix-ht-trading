@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Phoenix HT Trading</title>
+  <style>
+    :root {
+      --bg: #05080D;
+      --card: rgba(12, 18, 30, 0.85);
+      --border: rgba(255, 255, 255, 0.06);
+      --orange: #FF7B00;
+      --muted: #6C7D93;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: #FFF; display: flex; justify-content: center; min-height: 100vh; }
+    
+    .app-viewport { width: 100%; max-width: 440px; padding: 16px 16px calc(110px + env(safe-area-inset-bottom)); }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+
+    /* Profile */
+    .profile-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .avatar { font-size: 32px; background: rgba(255,123,0,0.15); width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(255,123,0,0.3); }
+
+    /* Settings Sections */
+    .sec-title { font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin: 24px 0 8px 12px; }
+    .menu-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .menu-item { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { background: rgba(255,123,0,0.1); }
+    .menu-right { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .chevron { transition: transform 0.3s; }
+    .menu-item.open .chevron { transform: rotate(180deg); color: var(--orange); }
+
+    /* Dropdowns */
+    .dropdown-content { display: none; padding: 16px; background: rgba(0,0,0,0.25); border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .dropdown-content.show { display: block; }
+    .input-field { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: #FFF; font-size: 13px; outline: none; margin-top: 4px; }
+    
+    /* Logout */
+    .logout-btn { width: 100%; padding: 16px; background: rgba(255,77,97,0.1); border: 1px solid rgba(255,77,97,0.3); border-radius: 16px; color: #FF4D61; font-weight: 900; font-size: 15px; margin-top: 30px; cursor: pointer; }
+
+    /* General Page Cards */
+    .content-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; font-size: 14px; color: #A0AEC0; text-align: center; }
+
+    /* Bottom Nav */
+    .nav-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(440px, 100%); padding: 10px 10px calc(14px + env(safe-area-inset-bottom, 12px)); background: rgba(5,8,13,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 9999; }
+    .nav-btn { border: none; background: transparent; color: var(--muted); padding: 8px 4px; border-radius: 12px; font-weight: 700; font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+    .nav-btn.active { color: var(--orange); }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    
+    <div id="tab-signals" class="tab-page active">
+      <div class="sec-title" style="margin-top:0;">📡 صفقة التداول الحالية</div>
+      <div class="content-card" style="text-align: right;">
+        <div style="font-weight: 800; color: #FFF; margin-bottom: 8px;">EUR/USD - Buy (شراء)</div>
+        <div style="font-size: 12px; line-height: 1.6;">Entry: 1.0850<br>Take Profit: 1.0920<br>Stop Loss: 1.0810</div>
+      </div>
+    </div>
+
+    <div id="tab-chart" class="tab-page">
+      <div class="sec-title" style="margin-top:0;">📈 الشارت الحي</div>
+      <div class="content-card" style="height: 350px; display: flex; align-items: center; justify-content: center;">
+        [TradingView / Chart Widget Here]
+      </div>
+    </div>
+
+    <div id="tab-news" class="tab-page">
+      <div class="sec-title" style="margin-top:0;">📰 الأخبار الاقتصادية</div>
+      <div class="content-card" style="text-align: right;">
+        <div style="font-weight: 700; color: #FFF; font-size: 13px;">معدل البطالة الأمريكي (USD)</div>
+        <div style="font-size: 11px; margin-top: 4px;">خبر قوي جداً يؤثر على الأسواق اليوم.</div>
+      </div>
+    </div>
+
+    <div id="tab-shop" class="tab-page">
+      <div class="sec-title" style="margin-top:0;">🛒 المتجر والخدمات</div>
+      <div class="content-card">
+        <div style="font-weight: 700; color: #FFF;">اشتراك VIP الشهرى</div>
+        <div style="color: var(--orange); font-weight: 900; margin: 8px 0;">$49 / شهرياً</div>
+      </div>
+    </div>
+
+    <div id="tab-more" class="tab-page">
+      
+      <div class="profile-box">
+        <div class="avatar">🐦‍🔥</div>
+        <div>
+          <div style="font-size: 17px; font-weight: 800;" id="display-user-name">Guest</div>
+          <div style="font-size: 11px; padding: 3px 10px; border-radius: 20px; background: rgba(108,125,147,0.2); color: #A0AEC0; font-weight: 700; display: inline-block; margin-top: 5px;" id="display-user-status">Free Member</div>
+        </div>
+      </div>
+
+      <div class="sec-title">🧰 أدوات التداول</div>
+      <div class="menu-card">
+        <div class="menu-item" onclick="toggleMenu(this, 'calc-drop')">
+          <div>🧮 Risk Calculator</div>
+          <div class="menu-right"><span class="chevron">▼</span></div>
+        </div>
+        <div id="calc-drop" class="dropdown-content">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div><label style="font-size:11px; color:#A0AEC0;">Balance ($)</label><input type="number" id="c-bal" class="input-field" value="1000" oninput="calc()"></div>
+            <div><label style="font-size:11px; color:#A0AEC0;">Risk (%)</label><input type="number" id="c-risk" class="input-field" value="1" oninput="calc()"></div>
+          </div>
+          <div><label style="font-size:11px; color:#A0AEC0;">Stop Loss (Pips)</label><input type="number" id="c-sl" class="input-field" value="30" oninput="calc()"></div>
+          <div style="margin-top:12px; background:rgba(255,123,0,0.08); border:1px solid rgba(255,123,0,0.2); border-radius:10px; padding:10px; text-align:center;">
+            <div style="font-size:10px; color:var(--muted); font-weight:800;">RECOMMENDED LOT</div>
+            <div style="font-size:18px; font-weight:900; color:var(--orange); margin:2px 0;" id="c-out">0.03 Lot</div>
+          </div>
+        </div>
+
+        <div class="menu-item" onclick="toggleMenu(this, 'acad-drop')">
+          <div>📚 SMC Academy</div>
+          <div class="menu-right"><span class="chevron">▼</span></div>
+        </div>
+        <div id="acad-drop" class="dropdown-content">
+          <div style="font-size:13px; font-weight:700; color:var(--orange); margin-bottom:4px;">🎯 Order Block (OB)</div>
+          <div style="font-size:12px; color:#A0AEC0; line-height:1.4;">آخر شمعة هابطة قبل صعود قوي، تعتبر منطقة ارتداد قوية.</div>
+        </div>
+      </div>
+
+      <div class="sec-title">⭐ الترقية والاشتراكات</div>
+      <div class="menu-card">
+        <div class="menu-item" onclick="window.open('https://wa.me/96171285759', '_blank')">
+          <div>💎 VIP Subscription</div>
+          <div class="menu-right" style="color:var(--orange);">Upgrade <span>▶</span></div>
+        </div>
+        <div class="menu-item" onclick="window.open('https://wa.me/96171285759', '_blank')">
+          <div>🎁 Get VIP For Free</div>
+          <div class="menu-right" style="color:#28C76F;">OneRoyal <span>▶</span></div>
+        </div>
+      </div>
+
+      <div class="sec-title">📞 الدعم والمجتمع</div>
+      <div class="menu-card">
+        <div class="menu-item" onclick="window.open('https://t.me/phoenixhttrading', '_blank')">
+          <div>✈️ Telegram Channel</div>
+          <div class="menu-right"><span>▶</span></div>
+        </div>
+        <div class="menu-item" onclick="window.open('https://wa.me/96176562495', '_blank')">
+          <div>💬 Contact Support</div>
+          <div class="menu-right"><span>▶</span></div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="alert('Logged out')">Log Out - تسجيل الخروج</button>
+    </div>
+
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn active" onclick="switchTab('signals', this)"><span>📡</span>Signals</button>
+    <button class="nav-btn" onclick="switchTab('chart', this)"><span>📈</span>Chart</button>
+    <button class="nav-btn" onclick="switchTab('news', this)"><span>📰</span>News</button>
+    <button class="nav-btn" onclick="switchTab('shop', this)"><span>🛒</span>Shop</button>
+    <button class="nav-btn" onclick="switchTab('more', this)"><span>⚙️</span>Settings</button>
+  </div>
+
+  <script>
+    // Tab Switching Logic
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById('tab-' + tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // Dropdown Logic inside Settings
+    function toggleMenu(el, id) {
+      const box = document.getElementById(id);
+      box.classList.toggle('show');
+      el.classList.toggle('open');
+    }
+
+    // Risk Calculator Logic
+    function calc() {
+      const b = parseFloat(document.getElementById('c-bal').value) || 0;
+      const r = parseFloat(document.getElementById('c-risk').value) || 0;
+      const s = parseFloat(document.getElementById('c-sl').value) || 1;
+      const lot = ((b * r) / 100) / (s * 10);
+      document.getElementById('c-out').innerText = lot.toFixed(2) + ' Lot';
+    }
+  </script>
+</body>
+</html>
