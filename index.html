@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#080C14">
+<title>Phoenix HT Trading</title>
+
+<!-- Apple & PWA Enhanced Icon Setup -->
+<link rel="apple-touch-icon" href="https://img.icons8.com/color/512/phoenix.png">
+<link rel="apple-touch-icon" sizes="152x152" href="https://img.icons8.com/color/512/phoenix.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://img.icons8.com/color/512/phoenix.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://img.icons8.com/color/512/phoenix.png">
+<link rel="shortcut icon" href="https://img.icons8.com/color/512/phoenix.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Phoenix HT">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Firebase Core -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<style>
+* { 
+  box-sizing: border-box; margin: 0; padding: 0; 
+  font-family: 'Plus Jakarta Sans', sans-serif; 
+  -webkit-tap-highlight-color: transparent; 
+}
+
+body { 
+  background-color: #05080d; color: #FFFFFF; min-height: 100vh; 
+  overflow-x: hidden; position: relative; 
+  -webkit-user-select: none; user-select: none;
+}
+
+input, textarea, select {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+body::before { content: ''; position: fixed; inset: 0; z-index: -2; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 25px 25px; }
+body::after { content: ''; position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 15% 30%, rgba(255, 123, 0, 0.12) 0%, transparent 40%), radial-gradient(circle at 85% 70%, rgba(255, 77, 97, 0.08) 0%, transparent 40%); pointer-events: none; }
+
+button, input, select, textarea, .nav-tab, .sig-card, .store-card, .settings-item { cursor: pointer; pointer-events: auto !important; touch-action: manipulation; }
+.hidden { display: none !important; }
+
+.app-viewport { max-width: 440px; margin: 0 auto; padding: 16px 16px calc(130px + env(safe-area-inset-bottom)); position: relative; z-index: 10; }
+
+/* Dynamic Watermark Overlay */
+#app-watermark {
+  position: fixed; inset: 0; z-index: 5;
+  pointer-events: none; opacity: 0.04;
+  display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center;
+  font-size: 15px; font-weight: 900; color: #FFF; transform: rotate(-25deg);
+  overflow: hidden; line-height: 4; gap: 20px;
+}
+
+/* Auth Screen */
+#auth-screen { 
+  position: fixed; inset: 0; 
+  background: radial-gradient(circle at center, #121019 0%, #05080d 100%); 
+  backdrop-filter: blur(16px); 
+  z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; 
+}
+.auth-box { 
+  width: 100%; max-width: 390px; 
+  background: linear-gradient(145deg, rgba(20, 18, 28, 0.95) 0%, rgba(10, 14, 24, 0.95) 100%); 
+  border: 1px solid rgba(255, 123, 0, 0.35); 
+  border-radius: 26px; padding: 36px 26px; 
+  box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(255, 123, 0, 0.15); 
+  text-align: center; position: relative; overflow: hidden;
+}
+.auth-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #ff7b00, #ff4d61, #f5c451); }
+.phoenix-auth-logo { width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, rgba(255, 123, 0, 0.2), rgba(255, 77, 97, 0.1)); border: 1.5px solid rgba(255, 123, 0, 0.6); display: grid; place-items: center; margin: 0 auto 16px; box-shadow: 0 0 25px rgba(255, 123, 0, 0.4); font-size: 32px; }
+.auth-title { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 4px; letter-spacing: 0.5px; }
+.auth-subtitle { font-size: 11px; color: #ffab40; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
+.auth-input-group { position: relative; margin-bottom: 14px; text-align: left; }
+.auth-input { width: 100%; padding: 14px 16px 14px 44px; background: rgba(5, 8, 13, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; color: #FFF; font-size: 14px; outline: none; transition: all 0.3s ease; }
+.auth-input:focus { border-color: #ff7b00; background: rgba(5, 8, 13, 0.9); box-shadow: 0 0 12px rgba(255, 123, 0, 0.25); }
+.auth-input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; pointer-events: none; }
+.auth-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #ff7b00 0%, #e65100 100%); border: none; border-radius: 14px; color: #fff; font-weight: 900; font-size: 15px; margin-top: 8px; box-shadow: 0 8px 20px rgba(255, 123, 0, 0.35); transition: transform 0.2s; }
+.auth-btn:active { transform: scale(0.98); }
+
+/* Header */
+.app-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 16px; }
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.phoenix-logo-box { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #1e1b29, #0c121e); border: 1.5px solid rgba(255, 123, 0, 0.5); display: grid; place-items: center; padding: 4px; box-shadow: 0 4px 20px rgba(255, 123, 0, 0.3); font-size: 20px; }
+.brand-title-main { font-size: 17px; font-weight: 900; background: linear-gradient(180deg, #FFFFFF 0%, #ffab40 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.brand-sub-title { font-size: 8px; color: #ff7b00; font-weight: 800; letter-spacing: 2px; }
+
+/* Timeframe Selector for Stats */
+.timeframe-bar { display: flex; gap: 6px; margin-bottom: 10px; background: rgba(12, 18, 30, 0.6); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+.timeframe-btn { flex: 1; padding: 6px; font-size: 10px; font-weight: 800; border: none; border-radius: 8px; background: transparent; color: #94a3b8; transition: 0.3s; }
+.timeframe-btn.active { background: rgba(255, 123, 0, 0.25); color: #ffab40; border: 1px solid rgba(255, 123, 0, 0.4); }
+
+/* Stats Grid Cards */
+.stats-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+.stat-card { background: rgba(12, 18, 30, 0.85); border: 1px solid rgba(255, 123, 0, 0.2); border-radius: 14px; padding: 12px; text-align: center; }
+.stat-card.full-width { grid-column: span 2; display: flex; justify-content: space-around; align-items: center; }
+.stat-val { font-size: 16px; font-weight: 900; color: #ffab40; }
+.stat-lbl { font-size: 10px; color: #A0AEC0; font-weight: 700; margin-top: 2px; }
+
+/* Filter Bar */
+.filter-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.filter-btn { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; color: #A0AEC0; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.filter-btn.active { background: #ff7b00; color: #fff; border-color: #ff7b00; box-shadow: 0 4px 12px rgba(255,123,0,0.3); }
+
+/* Admin Panels */
+.admin-card { background: linear-gradient(145deg, #16120e 0%, #0c121e 100%); border: 1px dashed rgba(255, 123, 0, 0.6); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+.admin-title { font-size: 15px; font-weight: 900; color: #ff7b00; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.admin-input, .admin-textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #FFF; font-size: 13px; outline: none; margin-bottom: 10px; }
+.admin-textarea { min-height: 70px; resize: none; }
+.admin-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #ff7b00 0%, #e65100 100%); border: none; border-radius: 10px; color: #FFF; font-weight: 900; font-size: 14px; box-shadow: 0 4px 15px rgba(255,123,0,0.3); }
+.pair-quick-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+.pair-btn { flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #A0AEC0; font-size: 11px; font-weight: bold; }
+.pair-btn.active { background: rgba(255, 123, 0, 0.2); border-color: #ff7b00; color: #ffab40; }
+
+/* User Item */
+.user-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+.user-name { font-size: 13px; font-weight: 800; color: #FFF; }
+.user-status-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 800; display: inline-block; margin-top: 3px; }
+.user-status-badge.free { background: rgba(255,255,255,0.1); color: #A0AEC0; }
+.user-status-badge.vip { background: rgba(245, 196, 81, 0.2); color: #F5C451; border: 1px solid #F5C451; }
+.btn-toggle-vip { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; border: none; cursor: pointer; }
+.btn-toggle-vip.grant { background: #28C76F; color: #000; }
+.btn-toggle-vip.revoke { background: #FF4D61; color: #FFF; }
+
+/* Signals UI */
+.sec-title { font-size: 15px; font-weight: 800; color: #FFF; margin: 20px 0 12px; display: flex; align-items: center; justify-content: space-between; }
+.sig-card { background: #0c121e; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 16px; margin-bottom: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); position: relative; }
+.sig-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.sig-pair { font-weight: 900; font-size: 16px; letter-spacing: 0.5px; }
+.badge-dir { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900; }
+.badge-dir.buy { background: rgba(40, 199, 111, 0.15); color: #28C76F; border: 1px solid rgba(40, 199, 111, 0.3); }
+.badge-dir.sell { background: rgba(255, 77, 97, 0.15); color: #FF4D61; border: 1px solid rgba(255, 77, 97, 0.3); }
+.badge-dir.pending { background: rgba(245, 196, 81, 0.15); color: #F5C451; border: 1px solid rgba(245, 196, 81, 0.3); }
+
+/* Key Note Style */
+.sig-note-box { background: rgba(255, 123, 0, 0.08); border-left: 3px solid #ff7b00; padding: 8px 12px; border-radius: 6px; font-size: 11px; color: #ffab40; font-weight: 600; margin-bottom: 10px; line-height: 1.4; }
+.sig-reason { font-size: 11px; color: #94a3b8; margin-bottom: 10px; font-weight: 600; }
+
+.sig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02); margin-bottom: 10px; }
+.sig-cell { text-align: center; }
+.sig-cell label { display: block; font-size: 10px; color: #6C7D93; font-weight: 700; margin-bottom: 3px; }
+.sig-cell val { font-size: 13px; font-weight: 800; color: #FFF; }
+
+.sig-result-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.03); padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+
+.admin-sig-actions { display: none; grid-template-columns: repeat(5, 1fr); gap: 4px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); }
+.btn-status { padding: 6px 2px; font-size: 10px; font-weight: 800; border-radius: 6px; border: none; color: #FFF; }
+.btn-status.activate { background: rgba(0, 210, 255, 0.2); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.4); }
+.btn-status.tp { background: rgba(40, 199, 111, 0.2); color: #28C76F; border: 1px solid rgba(40, 199, 111, 0.4); }
+.btn-status.sl { background: rgba(255, 77, 97, 0.2); color: #FF4D61; border: 1px solid rgba(255, 77, 97, 0.4); }
+.btn-status.close { background: rgba(245, 196, 81, 0.2); color: #F5C451; border: 1px solid rgba(245, 196, 81, 0.4); }
+.btn-status.del { background: rgba(255, 255, 255, 0.1); color: #A0AEC0; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+/* News & Shop */
+.news-card, .store-card { background: #0c121e; border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; margin-bottom: 16px; overflow: hidden; padding: 16px; }
+.news-title { font-size: 15px; font-weight: 900; margin-bottom: 8px; color: #ffab40; }
+.news-text { font-size: 13px; color: #A0AEC0; line-height: 1.5; }
+.store-card { display: flex; gap: 16px; align-items: center; }
+.store-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.store-price { color: #28C76F; font-weight: 900; font-size: 16px; margin-bottom: 8px; }
+.store-btn { background: rgba(255, 123, 0, 0.1); color: #ffab40; border: 1px solid rgba(255, 123, 0, 0.3); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; width: 100%; }
+
+/* Telegram Live Incoming Section */
+.telegram-live-box { background: rgba(255, 123, 0, 0.05); border: 1px dashed rgba(255, 123, 0, 0.3); border-radius: 14px; padding: 12px; margin-bottom: 16px; }
+.telegram-live-title { font-size: 12px; font-weight: 800; color: #ffab40; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.telegram-msg-card { background: rgba(0, 0, 0, 0.4); border-right: 3px solid #ff7b00; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 12px; color: #fff; line-height: 1.4; white-space: pre-line; }
+
+/* Settings UI */
+.settings-profile-header {
+  background: linear-gradient(135deg, rgba(255, 123, 0, 0.15) 0%, rgba(12, 18, 30, 0.95) 100%);
+  border: 1px solid rgba(255, 123, 0, 0.35);
+  border-radius: 22px; padding: 22px;
+  display: flex; align-items: center; gap: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.profile-avatar-large {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, #1e1b29, #0c121e);
+  border: 2px solid #ff7b00; display: grid; place-items: center;
+  font-size: 28px; box-shadow: 0 0 20px rgba(255, 123, 0, 0.3);
+}
+.profile-info { flex: 1; }
+.profile-name-text { font-size: 19px; font-weight: 900; color: #FFF; letter-spacing: 0.5px; }
+.profile-badge-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 6px;
+}
+.profile-badge-pill.free { background: rgba(255,255,255,0.08); color: #A0AEC0; border: 1px solid rgba(255,255,255,0.15); }
+.profile-badge-pill.vip { background: rgba(245, 196, 81, 0.2); color: #F5C451; border: 1px solid #F5C451; box-shadow: 0 0 12px rgba(245, 196, 81, 0.25); }
+
+.settings-section-title {
+  font-size: 11px; color: #6C7D93; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1.5px; margin: 24px 0 8px 12px;
+}
+.settings-menu-card {
+  background: rgba(12, 18, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.settings-menu-item {
+  padding: 16px; display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: #FFF; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.settings-menu-item:last-child { border-bottom: none; }
+.settings-menu-item:active { background: rgba(255, 123, 0, 0.1); }
+.settings-menu-right { color: #6C7D93; font-size: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.chevron { font-size: 12px; opacity: 0.6; transition: transform 0.3s; }
+.settings-menu-item.open .chevron { transform: rotate(180deg); color: #ffab40; }
+
+.settings-dropdown-content {
+  display: none; padding: 16px; background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+.settings-dropdown-content.show { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+.calc-res { background: rgba(255, 123, 0, 0.1); border: 1px solid #ff7b00; border-radius: 12px; padding: 12px; text-align: center; margin-top: 12px; }
+.calc-res-title { font-size: 11px; color: #A0AEC0; font-weight: 700; }
+.calc-res-val { font-size: 22px; font-weight: 900; color: #ffab40; margin-top: 2px; }
+
+.learn-item { background: #0c121e; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.learn-head { font-size: 14px; font-weight: 800; color: #ffab40; margin-bottom: 6px; }
+.learn-body { font-size: 12px; color: #A0AEC0; line-height: 1.5; }
+
+.logout-btn-pro {
+  width: 100%; padding: 16px;
+  background: rgba(255, 77, 97, 0.1);
+  border: 1px solid rgba(255, 77, 97, 0.3);
+  border-radius: 16px; color: #FF4D61;
+  font-weight: 900; font-size: 15px; margin-top: 30px;
+  box-shadow: 0 4px 15px rgba(255, 77, 97, 0.15); transition: 0.3s;
+}
+.logout-btn-pro:active { transform: scale(0.98); background: rgba(255, 77, 97, 0.2); }
+
+/* Bottom Nav */
+.nav-bottom-bar { 
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); 
+  width: min(440px, 100%); 
+  padding: 10px 10px calc(14px + env(safe-area-inset-bottom, 12px)); 
+  background: rgba(5, 8, 13, 0.95); backdrop-filter: blur(20px); 
+  border-top: 1px solid rgba(255,255,255,0.05); 
+  display: grid; grid-template-columns: repeat(5, 1fr); z-index: 9999; 
+}
+.nav-tab { 
+  border: none; background: transparent; color: #6C7D93; 
+  padding: 8px 4px; border-radius: 12px; font-weight: 700; font-size: 10px; 
+  display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.3s; 
+}
+.nav-tab.active { color: #ffab40; background: rgba(255, 123, 0, 0.1); }
+.nav-tab i { font-size: 18px; font-style: normal; }
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="phoenix-auth-logo">🐦‍🔥</div>
+    <div class="auth-title">Phoenix HT Trading</div>
+    <div class="auth-subtitle">Secure Terminal Access</div>
+    
+    <div class="auth-input-group">
+      <span class="auth-input-icon">👤</span>
+      <input type="text" id="auth-username" class="auth-input" placeholder="Enter your username">
+    </div>
+    <div class="auth-input-group">
+      <span class="auth-input-icon">🔒</span>
+      <input type="password" id="auth-password" class="auth-input" placeholder="Access Password">
+    </div>
+    
+    <button type="button" class="auth-btn" onclick="handleAuthSubmit()">Authorize Session</button>
+  </div>
+</div>
+
+<div class="app-viewport">
+  <div class="app-header">
+    <div class="header-brand">
+      <div class="phoenix-logo-box">🐦‍🔥</div>
+      <div><div class="brand-title-main">PHOENIX HT</div><div class="brand-sub-title">TRADING</div></div>
+    </div>
+  </div>
+
+  <div id="tab-home" class="tab-page">
+    <!-- Timeframe Selector for Stats -->
+    <div class="timeframe-bar">
+      <button class="timeframe-btn active" onclick="setTimeframe('TODAY', this)">Today</button>
+      <button class="timeframe-btn" onclick="setTimeframe('WEEK', this)">Weekly</button>
+      <button class="timeframe-btn" onclick="setTimeframe('MONTH', this)">Monthly</button>
+      <button class="timeframe-btn" onclick="setTimeframe('YEAR', this)">Yearly / All</button>
+    </div>
+
+    <!-- Enhanced Stats Grid -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-wins-losses" style="color:#28C76F">0 / 0</div>
+        <div class="stat-lbl">WINS / LOSSES</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-winrate" style="color:#ffab40">0%</div>
+        <div class="stat-lbl">WIN RATE</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-pips" style="color:#00d2ff">+0 Pips</div>
+        <div class="stat-lbl">TOTAL PIPS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-profit-usd" style="color:#28C76F">+$0.00</div>
+        <div class="stat-lbl">PROFIT / LOSS ($)</div>
+      </div>
+    </div>
+
+    <!-- Admin Publishing Panel -->
+    <div id="admin-panel" class="admin-card hidden">
+      <div class="admin-title">🛠️ Publish Signal</div>
+      <div class="pair-quick-btns">
+        <button class="pair-btn active" id="btn-xau" onclick="setPair('XAUUSD', 'btn-xau')">XAUUSD</button>
+        <button class="pair-btn" id="btn-us30" onclick="setPair('US30', 'btn-us30')">US30</button>
+        <button class="pair-btn" id="btn-nas" onclick="setPair('NAS100', 'btn-nas')">NAS100</button>
+      </div>
+      <input type="text" id="adm-pair" class="admin-input" value="XAUUSD">
+      <select id="adm-dir" class="admin-input" onchange="autoCalculateTPs()">
+        <option value="BUY">🟢 BUY (شراء مباشر)</option>
+        <option value="SELL">🔴 SELL (بيع مباشر)</option>
+        <option value="PENDING_BUY">⏳ PENDING BUY (أمر معلق شراء)</option>
+        <option value="PENDING_SELL">⏳ PENDING SELL (أمر معلق بيع)</option>
+      </select>
+      <select id="adm-reason" class="admin-input" style="border-color: #ff7b00;">
+        <option value="">⚙️ Entry Reason (اختياري) ...</option>
+        <option value="Order Block (OB)">Order Block (OB)</option>
+        <option value="Fair Value Gap (FVG)">Fair Value Gap (FVG)</option>
+        <option value="Liquidity Sweep">Liquidity Sweep</option>
+        <option value="Break of Structure (BOS)">Break of Structure (BOS)</option>
+      </select>
+      
+      <!-- Key Note Input Field -->
+      <textarea id="adm-note" class="admin-textarea" placeholder="📌 Key Signal Note / Analysis (e.g. Breakout retest on 15m frame)..."></textarea>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <input type="text" id="adm-entry" class="admin-input" placeholder="Entry" oninput="autoCalculateTPs()">
+        <input type="text" id="adm-sl" class="admin-input" placeholder="SL">
+        <input type="text" id="adm-tp1" class="admin-input" placeholder="TP 1 (Auto +50 Pips)">
+        <input type="text" id="adm-tp2" class="admin-input" placeholder="TP 2 (Auto +100 Pips)">
+      </div>
+      <button class="admin-btn" onclick="publishSignal()">Publish Signal 🚀</button>
+    </div>
+
+    <!-- Live Telegram Feed Box -->
+    <div class="telegram-live-box">
+      <div class="telegram-live-title">📡 Live Telegram Feed (تلقائي)</div>
+      <div id="telegram-live-container">
+        <p style="font-size:11px; color:#A0AEC0;">جاري مزامنة الرسائل الواردة من تلغرام...</p>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterSignals('ALL', this)">All Signals</button>
+      <button class="filter-btn" onclick="filterSignals('ACTIVE', this)">🟢 Active</button>
+      <button class="filter-btn" onclick="filterSignals('PENDING', this)">⏳ Pending</button>
+      <button class="filter-btn" onclick="filterSignals('TP', this)">✅ Won (TP)</button>
+      <button class="filter-btn" onclick="filterSignals('SL', this)">🛑 Lost (SL)</button>
+    </div>
+
+    <div id="signals-container-home"></div>
+  </div>
+
+  <div id="tab-chart" class="tab-page hidden">
+    <div class="sec-title">📈 Live Gold Chart (XAUUSD)</div>
+    <div style="height: 480px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: #0c121e;">
+      <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=OANDA%3AXAUUSD&interval=15&hidesidetoolbar=1&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC" style="width:100%; height:100%; border:none;"></iframe>
+    </div>
+  </div>
+
+  <div id="tab-news" class="tab-page hidden">
+    <div class="sec-title">📅 Economic Calendar</div>
+    <div style="border-radius: 18px; overflow: hidden; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.06);">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+        { "colorTheme": "dark", "isTransparent": true, "width": "100%", "height": "360", "locale": "en", "importanceFilter": "-1,0,1", "currencyFilter": "USD,EUR,GBP,JPY" }
+        </script>
+      </div>
+    </div>
+
+    <div id="admin-news-panel" class="admin-card hidden">
+      <div class="admin-title">📰 Add News & Analysis</div>
+      <input type="text" id="adm-news-title" class="admin-input" placeholder="Headline...">
+      <textarea id="adm-news-content" class="admin-textarea" placeholder="Analysis content..."></textarea>
+      <button class="admin-btn" onclick="publishNews()">Post Update</button>
+    </div>
+
+    <div class="sec-title">📰 Market Updates</div>
+    <div id="news-container"></div>
+  </div>
+
+  <div id="tab-store" class="tab-page hidden">
+    <div id="admin-store-panel" class="admin-card hidden">
+      <div class="admin-title">🛒 Add Product</div>
+      <input type="text" id="adm-prod-title" class="admin-input" placeholder="Product Name (e.g. Phoenix EA)">
+      <input type="text" id="adm-prod-price" class="admin-input" placeholder="Price (e.g. $199)">
+      <button class="admin-btn" onclick="publishProduct()">Add to Shop</button>
+    </div>
+
+    <div class="sec-title">🛍️ Trading Shop</div>
+    <div id="store-container"></div>
+  </div>
+
+  <!-- Settings & Profile Page -->
+  <div id="tab-more" class="tab-page hidden">
+    <div class="settings-profile-header">
+      <div class="profile-avatar-large">🐦‍🔥</div>
+      <div class="profile-info">
+        <div class="profile-name-text" id="display-user-name">Guest</div>
+        <div id="display-user-status" class="profile-badge-pill free">Free Member</div>
+      </div>
+    </div>
+
+    <!-- Admin VIP Management Panel -->
+    <div id="admin-users-panel" class="admin-card hidden">
+      <div class="admin-title">👑 VIP & User Management</div>
+      <div id="users-list-container">
+        <p style="font-size:12px; color:#A0AEC0;">Loading user list...</p>
+      </div>
+    </div>
+
+    <!-- Section 1: Trading Tools -->
+    <div class="settings-section-title">🧰 أدوات التداول (Trading Tools)</div>
+    <div class="settings-menu-card">
+      <div class="settings-menu-item" onclick="toggleSettingsMenu(this, 'calc-dropdown')">
+        <div><span>🧮</span> Risk & Position Calculator</div>
+        <div class="settings-menu-right"><span class="chevron">▼</span></div>
+      </div>
+      <div id="calc-dropdown" class="settings-dropdown-content">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+          <div>
+            <label style="font-size: 11px; color:#A0AEC0; font-weight:700;">Balance ($)</label>
+            <input type="number" id="calc-bal" class="admin-input" value="1000" style="margin-top: 4px;" oninput="calculateLotSize()">
+          </div>
+          <div>
+            <label style="font-size: 11px; color:#A0AEC0; font-weight:700;">Risk (%)</label>
+            <input type="number" id="calc-risk" class="admin-input" value="1" style="margin-top: 4px;" oninput="calculateLotSize()">
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 11px; color:#A0AEC0; font-weight:700;">Stop Loss (Pips / Pts)</label>
+          <input type="number" id="calc-sl" class="admin-input" value="30" style="margin-top: 4px;" oninput="calculateLotSize()">
+        </div>
+        <div class="calc-res">
+          <div class="calc-res-title">RECOMMENDED LOT SIZE (GOLD / FOREX)</div>
+          <div class="calc-res-val" id="calc-out">0.03 Lot</div>
+          <div style="font-size: 11px; color: #28C76F; font-weight: 700; margin-top: 4px;">Risk Amount: $<span id="calc-risk-usd">10.00</span></div>
+        </div>
+      </div>
+
+      <div class="settings-menu-item" onclick="toggleSettingsMenu(this, 'academy-dropdown')">
+        <div><span>📚</span> Trading SMC Academy</div>
+        <div class="settings-menu-right"><span class="chevron">▼</span></div>
+      </div>
+      <div id="academy-dropdown" class="settings-dropdown-content">
+        <div class="learn-item">
+          <div class="learn-head">🎯 Order Block (OB)</div>
+          <div class="learn-body">آخر شمعة هابطة قبل صعود قوي، أو آخر شمعة صاعدة قبل هبوط قوي. تعتبر منطقة دخول قوية للبنوك.</div>
+        </div>
+        <div class="learn-item">
+          <div class="learn-head">⚡ Fair Value Gap (FVG)</div>
+          <div class="learn-body">فجوة سعرية وتفاوت بالسيولة بين الشمعة الأولى والثالثة. السعر يميل للعودة وتعبئتها.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Premium & Subscriptions -->
+    <div class="settings-section-title">⭐ الترقية والاشتراكات (Premium)</div>
+    <div class="settings-menu-card">
+      <div class="settings-menu-item" onclick="window.open('https://wa.me/96171285759?text=مرحبا،%20بدي%20اشترك%20بقناة%20الـ%20VIP', '_blank')">
+        <div><span>💎</span> VIP Subscription</div>
+        <div class="settings-menu-right" style="color: #ffab40;">Upgrade <span>▶</span></div>
+      </div>
+      <div class="settings-menu-item" onclick="window.open('https://wa.me/96171285759?text=مرحبا،%20بدي%20افتح%20حساب%20OneRoyal%20تحت%20وكالتك', '_blank')">
+        <div><span>🎁</span> Get VIP For Free (OneRoyal)</div>
+        <div class="settings-menu-right" style="color: #28C76F;">Free <span>▶</span></div>
+      </div>
+    </div>
+
+    <!-- Section 3: Support -->
+    <div class="settings-section-title">📞 الدعم والمجتمع (Support)</div>
+    <div class="settings-menu-card">
+      <div class="settings-menu-item" onclick="window.open('https://t.me/phoenixhttrading', '_blank')">
+        <div><span>✈️</span> Official Telegram Channel</div>
+        <div class="settings-menu-right"><span>↗</span></div>
+      </div>
+      <div class="settings-menu-item" onclick="window.open('https://wa.me/96176562495?text=مرحبا،%20عندي%20استفسار', '_blank')">
+        <div><span>💬</span> Contact Support</div>
+        <div class="settings-menu-right"><span>↗</span></div>
+      </div>
+    </div>
+
+    <button class="logout-btn-pro" onclick="handleLogout()">Log Out - تسجيل الخروج</button>
+  </div>
+</div>
+
+<div class="nav-bottom-bar">
+  <button class="nav-tab active" id="btn-home" onclick="switchTab('home')"><i>📊</i>Signals</button>
+  <button class="nav-tab" id="btn-chart" onclick="switchTab('chart')"><i>📈</i>Chart</button>
+  <button class="nav-tab" id="btn-news" onclick="switchTab('news')"><i>📰</i>News</button>
+  <button class="nav-tab" id="btn-store" onclick="switchTab('store')"><i>🛒</i>Shop</button>
+  <button class="nav-tab" id="btn-more" onclick="switchTab('more')"><i>⚙️</i>Settings</button>
+</div>
+
+<script>
+/* FIREBASE CONFIGURATION */
+const firebaseConfig = {
+  apiKey: "AIzaSyDIfO_JQ02bfhJMtrxjJob-io-wMFOqobM",
+  authDomain: "phoenix-ht-trading.firebaseapp.com",
+  databaseURL: "https://phoenix-ht-trading-default-rtdb.firebaseio.com",
+  projectId: "phoenix-ht-trading",
+  storageBucket: "phoenix-ht-trading.firebasestorage.app",
+  messagingSenderId: "383155119391",
+  appId: "1:383155119391:web:30b373212caf15bdc37c2a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let currentUser = '';
+let signalsData = [];
+let newsData = [];
+let storeData = [];
+let usersData = {};
+let activeFilter = 'ALL';
+let currentTimeframe = 'TODAY';
+
+let telegramBotToken = '';
+let telegramChatId = '';
+let lastTelegramUpdateId = 0;
+
+function cleanKey(str) {
+  return (str || '').toString().toLowerCase().replace(/[.#$\[\]\/]/g, '_').trim();
+}
+
+/* Security Handlers */
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'u')) {
+    e.preventDefault();
+  }
+});
+
+function applyWatermark(username) {
+  if(!username) return;
+  let wm = document.getElementById('app-watermark');
+  if(!wm) {
+    wm = document.createElement('div');
+    wm.id = 'app-watermark';
+    document.body.appendChild(wm);
+  }
+  const tag = `${username.toUpperCase()} - PHOENIX HT`;
+  wm.innerHTML = Array(30).fill(`<div>${tag}</div>`).join('');
+}
+
+function checkSingleDeviceSession(username) {
+  const safeUser = cleanKey(username);
+  if(!safeUser) return;
+
+  let myDeviceId = localStorage.getItem('phoenix_device_id');
+  if (!myDeviceId) {
+    myDeviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    localStorage.setItem('phoenix_device_id', myDeviceId);
+  }
+
+  db.ref('users/' + safeUser + '/currentDevice').set(myDeviceId).then(() => {
+    db.ref('users/' + safeUser + '/currentDevice').on('value', (snapshot) => {
+      const activeDevice = snapshot.val();
+      if (activeDevice && activeDevice !== myDeviceId) {
+        alert('⚠️ تم تسجيل الدخول إلى هذا الحساب من جهاز آخر!');
+        handleLogout();
+      }
+    });
+  }).catch(err => console.error("Session lock error:", err));
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  setupRealtimeListeners();
+  initTelegramSecureConfig();
+
+  const savedUser = localStorage.getItem('phoenix_user');
+  if(savedUser) {
+    document.getElementById('auth-screen').classList.add('hidden');
+    currentUser = savedUser.toLowerCase();
+    document.getElementById('display-user-name').innerText = savedUser;
+    
+    applyWatermark(currentUser);
+    checkSingleDeviceSession(currentUser);
+    checkAdminAccess();
+    listenToUserProfile();
+  }
+  calculateLotSize();
+});
+
+function setupRealtimeListeners() {
+  db.ref('signals').on('value', (snapshot) => {
+    const data = snapshot.val();
+    signalsData = data ? Object.values(data) : [];
+    renderSignals();
+  });
+
+  db.ref('news').on('value', (snapshot) => {
+    const data = snapshot.val();
+    newsData = data ? Object.values(data) : [];
+    renderNews();
+  });
+
+  db.ref('store').on('value', (snapshot) => {
+    const data = snapshot.val();
+    storeData = data ? Object.values(data) : [];
+    renderStore();
+  });
+
+  db.ref('users').on('value', (snapshot) => {
+    usersData = snapshot.val() || {};
+    renderAdminUsersList();
+  });
+}
+
+/* Telegram Dynamic Config & Sync Handler */
+function initTelegramSecureConfig() {
+  db.ref('config/telegram').on('value', (snapshot) => {
+    const cfg = snapshot.val() || {};
+    telegramBotToken = cfg.token || '';
+    telegramChatId = cfg.chatId || '@phoenixhttrading';
+
+    if (telegramBotToken) {
+      startTelegramListening();
+    }
+  });
+}
+
+async function fetchTelegramUpdates() {
+  if (!telegramBotToken) return;
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/getUpdates?offset=${lastTelegramUpdateId + 1}`);
+    const data = await response.json();
+
+    if (data.ok && data.result.length > 0) {
+      const liveContainer = document.getElementById('telegram-live-container');
+      if (liveContainer.innerHTML.includes("جاري مزامنة")) {
+        liveContainer.innerHTML = '';
+      }
+
+      data.result.forEach(update => {
+        lastTelegramUpdateId = update.update_id;
+        const msg = update.message || update.channel_post;
+
+        if (msg && msg.text) {
+          const card = document.createElement('div');
+          card.className = 'telegram-msg-card';
+          card.innerText = msg.text;
+          liveContainer.prepend(card);
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Telegram incoming fetch error:", err);
+  }
+}
+
+function startTelegramListening() {
+  fetchTelegramUpdates();
+  setInterval(fetchTelegramUpdates, 5000);
+}
+
+/* دالة تسجيل الدخول والتحقق لكل مستخدم بحسابه الخاص */
+function handleAuthSubmit() {
+  const rawUsername = document.getElementById('auth-username').value.trim();
+  const rawPassword = document.getElementById('auth-password').value.trim();
+
+  if (!rawUsername) {
+    alert('يرجى إدخال اسم المستخدم!');
+    return;
+  }
+  if (!rawPassword) {
+    alert('يرجى إدخال كلمة المرور!');
+    return;
+  }
+
+  const username = cleanKey(rawUsername);
+
+  // الفحص في قاعدة بيانات Firebase
+  db.ref('users/' + username).once('value', (snapshot) => {
+    const userData = snapshot.val();
+
+    if (!userData) {
+      // 1. الحساب غير موجود -> إنشاء حساب جديد مع حفظ كلمة السر الخاصة به
+      db.ref('users/' + username).set({
+        username: username,
+        password: rawPassword, // حفظ كلمة المرور الخاصة بالمستخدم
+        status: 'FREE',
+        createdAt: Date.now()
+      }).then(() => {
+        alert('✅ تم إنشاء حساب جديد بنجاح بكلمة السر الخاصة بك!');
+        completeLogin(username);
+      });
+    } else {
+      // 2. الحساب موجود -> التحقق هل كلمة السر مطابقة
+      if (userData.password && userData.password === rawPassword) {
+        // كلمة السر صحيحة -> دخول الحساب
+        completeLogin(username);
+      } else {
+        // كلمة السر خطأ -> منع الدخول
+        alert('⚠️ اسم المستخدم هذا مسجل بالفعل وكلمة المرور غير صحيحة!');
+      }
+    }
+  }).catch(err => {
+    console.error("Auth error:", err);
+    alert('حدث خطأ أثناء التواصل مع قاعدة البيانات.');
+  });
+}
+
+function completeLogin(username) {
+  localStorage.setItem('phoenix_user', username);
+  currentUser = username;
+  document.getElementById('display-user-name').innerText = username;
+  document.getElementById('auth-screen').classList.add('hidden');
+
+  applyWatermark(currentUser);
+  checkSingleDeviceSession(currentUser);
+  checkAdminAccess();
+  listenToUserProfile();
+}
+
+function listenToUserProfile() {
+  const safeUser = cleanKey(currentUser);
+  if(!safeUser) return;
+  db.ref('users/' + safeUser).on('value', (snapshot) => {
+    const u = snapshot.val();
+    const statusEl = document.getElementById('display-user-status');
+    if(u && u.status === 'VIP') {
+      statusEl.innerText = '💎 VIP Member';
+      statusEl.className = 'profile-badge-pill vip';
+    } else {
+      statusEl.innerText = 'Free Member';
+      statusEl.className = 'profile-badge-pill free';
+    }
+  });
+}
+
+function handleLogout() { 
+  localStorage.removeItem('phoenix_user'); 
+  location.reload(); 
+}
+
+function checkAdminAccess() {
+  const safeUser = cleanKey(currentUser);
+  if (safeUser === 'abbas' || safeUser === 'admin') {
+    document.getElementById('admin-panel').classList.remove('hidden');
+    document.getElementById('admin-news-panel').classList.remove('hidden');
+    document.getElementById('admin-store-panel').classList.remove('hidden');
+    document.getElementById('admin-users-panel').classList.remove('hidden');
+    renderSignals();
+  }
+}
+
+function setPair(pair, btnId) {
+  document.getElementById('adm-pair').value = pair;
+  document.querySelectorAll('.pair-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(btnId).classList.add('active');
+  autoCalculateTPs();
+}
+
+// حساب الأهداف تلقائياً (TP1: 50 pips, TP2: 100 pips للذهب)
+function autoCalculateTPs() {
+  const entry = parseFloat(document.getElementById('adm-entry').value);
+  const dir = document.getElementById('adm-dir').value;
+  const pair = document.getElementById('adm-pair').value;
+  
+  if (!isNaN(entry)) {
+    const isIndices = (pair.includes('US30') || pair.includes('NAS'));
+    const pips50 = isIndices ? 50 : 5.00;
+    const pips100 = isIndices ? 100 : 10.00;
+    
+    let tp1 = 0, tp2 = 0;
+    if (dir.includes('BUY')) {
+      tp1 = entry + pips50;
+      tp2 = entry + pips100;
+    } else if (dir.includes('SELL')) {
+      tp1 = entry - pips50;
+      tp2 = entry - pips100;
+    }
+    
+    document.getElementById('adm-tp1').value = tp1.toFixed(2);
+    document.getElementById('adm-tp2').value = tp2.toFixed(2);
+  }
+}
+
+// دالة تنسيق توقيت دقيق (HH:MM:SS AM/PM DD-MM-YYYY)
+function getFormattedTimestamp() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  const dateStr = now.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+  return `${timeStr} (${dateStr})`;
+}
+
+/* Secure Telegram Signal Publisher - التنسيق المطور */
+async function sendSignalToTelegram(sig) {
+  if (!telegramBotToken) return;
+
+  const formattedTime = getFormattedTimestamp();
+  const isPending = sig.dir.includes('PENDING') || sig.status === 'PENDING';
+  const pairName = (sig.pair === 'XAUUSD' || sig.pair === 'الذهب') ? 'الذهب (XAUUSD)' : sig.pair;
+  
+  let dirType = 'شراء🔼';
+  if (sig.dir.includes('SELL')) dirType = 'بيع🔽';
+
+  let extraInfo = '';
+  if (sig.reason) extraInfo += `\n🔍 التحليل: ${sig.reason}`;
+  if (sig.note) extraInfo += `\n📌 ملاحظة: ${sig.note}`;
+
+  let messageText = '';
+
+  if (isPending) {
+    messageText = 
+`🐦‍🔥 Phoenix HT Trading | VIP 🐦‍🔥
+⏳ الحالة: أمر معلق (${dirType})
+🚩 الأصل: ${pairName}${extraInfo}
+🕯 سعر الدخول: [${sig.entry}]
+❌ الوقف: [${sig.sl}]
+🤑 الأهداف:
+🥇 [${sig.tp1}]
+🥈 [${sig.tp2}]
+⚖️ إدارة المخاطر: 1-2% كحد أقصى
+🕠 وقت الإنشاء: ${formattedTime}`;
+  } else {
+    messageText = 
+`🐦‍🔥 Phoenix HT Trading | VIP 🐦‍🔥
+🚨 النوع: ${dirType}
+🚩 الأصل: ${pairName}${extraInfo}
+🕯 الدخول: [${sig.entry}]
+❌ الوقف: [${sig.sl}]
+🤑 الأهداف:
+🥇 [${sig.tp1}]
+🥈 [${sig.tp2}]
+⚖️ إدارة المخاطر: 1-2% كحد أقصى
+🕠 وقت فتح الصفقة: ${formattedTime}`;
+  }
+
+  try {
+    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: telegramChatId,
+        text: messageText
+      })
+    });
+  } catch (err) {
+    console.error("Telegram Outgoing Error:", err);
+  }
+}
+
+// إرسال إشعار تفعلت
+async function sendActivationToTelegram(sig) {
+  if (!telegramBotToken) return;
+  
+  const formattedTime = getFormattedTimestamp();
+  const pairName = (sig.pair === 'XAUUSD' || sig.pair === 'الذهب') ? 'الذهب (XAUUSD)' : sig.pair;
+
+  const messageText = 
+`🐦‍🔥 Phoenix HT Trading | VIP 🐦‍🔥
+⚡️ تنبيه: تفعّلت الصفقة الآن!
+🚩 الأصل: ${pairName}
+🕯 سعر التفعيل: [${sig.entry}]
+🕠 وقت التفعيل: ${formattedTime}`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: telegramChatId,
+        text: messageText
+      })
+    });
+  } catch (err) {
+    console.error("Telegram Activation Error:", err);
+  }
+}
+
+// إرسال إشعار نتيجة الصفقة (TP / SL / Close) إلى تلغرام
+async function sendStatusUpdateToTelegram(sig, status, pips, profitUsd) {
+  if (!telegramBotToken) return;
+
+  const formattedTime = getFormattedTimestamp();
+  const pairName = (sig.pair === 'XAUUSD' || sig.pair === 'الذهب') ? 'الذهب (XAUUSD)' : sig.pair;
+
+  let title = '🎯 حققت الهدف! (Won - TP)';
+  if (status === 'SL') title = '🛑 ضربت وقف الخسارة (Lost - SL)';
+  if (status === 'CLOSE') title = '⚠️ إغلاق يدوي (Closed)';
+
+  const pipsFormatted = pips >= 0 ? `+${pips}` : `${pips}`;
+  const profitFormatted = profitUsd >= 0 ? `+$${profitUsd}` : `-$${Math.abs(profitUsd)}`;
+
+  const messageText = 
+`🐦‍🔥 Phoenix HT Trading | VIP 🐦‍🔥
+${title}
+🚩 الأصل: ${pairName}
+🕯 سعر الدخول: [${sig.entry}]
+📊 النتيجة: ${pipsFormatted} Pips (${profitFormatted})
+🕠 التوقيت: ${formattedTime}`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: telegramChatId,
+        text: messageText
+      })
+    });
+  } catch (err) {
+    console.error("Telegram Status Update Error:", err);
+  }
+}
+
+function publishSignal() {
+  const id = Date.now();
+  const dirVal = document.getElementById('adm-dir').value;
+  const isPending = dirVal.includes('PENDING');
+
+  const sig = {
+    id: id,
+    timestamp: id,
+    pair: document.getElementById('adm-pair').value,
+    dir: dirVal,
+    reason: document.getElementById('adm-reason').value,
+    note: document.getElementById('adm-note').value,
+    entry: parseFloat(document.getElementById('adm-entry').value || 0).toFixed(2),
+    sl: parseFloat(document.getElementById('adm-sl').value || 0).toFixed(2),
+    tp1: parseFloat(document.getElementById('adm-tp1').value || 0).toFixed(2),
+    tp2: parseFloat(document.getElementById('adm-tp2').value || 0).toFixed(2),
+    status: isPending ? 'PENDING' : 'ACTIVE',
+    pips: 0,
+    profitUsd: 0
+  };
+
+  db.ref('signals/' + id).set(sig);
+  sendSignalToTelegram(sig);
+
+  // إعادة ضبط وتفريغ المدخلات بعد النشر
+  document.getElementById('adm-entry').value = '';
+  document.getElementById('adm-sl').value = '';
+  document.getElementById('adm-tp1').value = '';
+  document.getElementById('adm-tp2').value = '';
+  document.getElementById('adm-note').value = '';
+  document.getElementById('adm-reason').value = '';
+}
+
+function filterSignals(filter, btn) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSignals();
+}
+
+function setTimeframe(tf, btn) {
+  currentTimeframe = tf;
+  document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateStats();
+}
+
+function updateSigStatus(id, newStatus) {
+  let pips = 0;
+  let profitUsd = 0;
+
+  const targetSignal = signalsData.find(s => s.id === id);
+
+  if (newStatus === 'ACTIVATE') {
+    db.ref('signals/' + id).update({ status: 'ACTIVE' });
+    if (targetSignal) sendActivationToTelegram(targetSignal);
+    return;
+  }
+
+  if (newStatus === 'TP') {
+    const valPips = prompt('أدخل عدد البيبات الكسبانة (مثال: 50):', '50');
+    const valUsd = prompt('أدخل قيمة الربح بالدولار (مثال: 100):', '100');
+    pips = parseFloat(valPips) || 0;
+    profitUsd = parseFloat(valUsd) || 0;
+  } else if (newStatus === 'SL') {
+    const valPips = prompt('أدخل عدد البيبات الخسرانة (مثال: -30):', '-30');
+    const valUsd = prompt('أدخل الخسارة بالدولار (مثال: -50):', '-50');
+    pips = parseFloat(valPips) || 0;
+    profitUsd = parseFloat(valUsd) || 0;
+  }
+
+  db.ref('signals/' + id).update({ 
+    status: newStatus,
+    pips: pips,
+    profitUsd: profitUsd
+  });
+
+  if (targetSignal && (newStatus === 'TP' || newStatus === 'SL' || newStatus === 'CLOSE')) {
+    sendStatusUpdateToTelegram(targetSignal, newStatus, pips, profitUsd);
+  }
+}
+
+function deleteSignal(id) {
+  if (confirm('هل أنت تأكد من حذف هذه الصفقة؟')) {
+    db.ref('signals/' + id).remove();
+  }
+}
+
+function renderSignals() {
+  const container = document.getElementById('signals-container-home');
+  container.innerHTML = '';
+
+  const filtered = signalsData.filter(s => {
+    if(activeFilter === 'ALL') return true;
+    return s.status === activeFilter;
+  });
+
+  filtered.reverse().forEach(s => {
+    let dirClass = s.dir.includes('BUY') ? 'buy' : 'sell';
+    if(s.status === 'PENDING' || s.dir.includes('PENDING')) dirClass = 'pending';
+
+    const reasonHtml = s.reason ? `<div class="sig-reason">🔍 Setup: ${s.reason}</div>` : '';
+    const noteHtml = s.note ? `<div class="sig-note-box">📌 <b>Key Note:</b> ${s.note}</div>` : '';
+    
+    let statusBadge = `<div class="badge-dir ${dirClass}">${s.dir}</div>`;
+    let cardBorder = 'rgba(255,255,255,0.06)';
+    let resultBar = '';
+
+    if (s.status === 'PENDING') {
+      statusBadge = `<div class="badge-dir pending">⏳ PENDING ORDER</div>`;
+      cardBorder = '#F5C451';
+    } else if(s.status === 'TP') {
+      statusBadge = `<div class="badge-dir" style="background:rgba(40,199,111,0.2); color:#28C76F; border:1px solid #28C76F;">✅ WON (TP)</div>`;
+      cardBorder = '#28C76F';
+      resultBar = `<div class="sig-result-bar"><span style="color:#28C76F;">Result: +${s.pips || 0} Pips</span><span style="color:#28C76F;">+$${s.profitUsd || 0}</span></div>`;
+    } else if(s.status === 'SL') {
+      statusBadge = `<div class="badge-dir" style="background:rgba(255,77,97,0.2); color:#FF4D61; border:1px solid #FF4D61;">🛑 LOST (SL)</div>`;
+      cardBorder = '#FF4D61';
+      resultBar = `<div class="sig-result-bar"><span style="color:#FF4D61;">Result: ${s.pips || 0} Pips</span><span style="color:#FF4D61;">$${s.profitUsd || 0}</span></div>`;
+    } else if(s.status === 'CLOSE') {
+      statusBadge = `<div class="badge-dir" style="background:rgba(245,196,81,0.2); color:#F5C451; border:1px solid #F5C451;">⚠️ CLOSED</div>`;
+      cardBorder = '#F5C451';
+    }
+
+    const safeUser = cleanKey(currentUser);
+    const isAdmin = (safeUser === 'abbas' || safeUser === 'admin');
+
+    const html = `
+      <div class="sig-card" style="border-color: ${cardBorder}">
+        <div class="sig-head">
+          <div class="sig-pair">${s.pair}</div>
+          ${statusBadge}
+        </div>
+        ${reasonHtml}
+        ${noteHtml}
+        <div class="sig-grid">
+          <div class="sig-cell"><label>Entry</label><val>${s.entry}</val></div>
+          <div class="sig-cell"><label>SL</label><val>${s.sl}</val></div>
+          <div class="sig-cell"><label>TP1</label><val>${s.tp1}</val></div>
+          <div class="sig-cell"><label>TP2</label><val>${s.tp2}</val></div>
+        </div>
+        ${resultBar}
+        <div class="admin-sig-actions" style="${isAdmin ? 'display:grid;' : 'display:none;'}">
+          ${s.status === 'PENDING' ? `<button class="btn-status activate" onclick="updateSigStatus(${s.id}, 'ACTIVATE')">⚡ تفعلت</button>` : ''}
+          <button class="btn-status tp" onclick="updateSigStatus(${s.id}, 'TP')">✅ TP</button>
+          <button class="btn-status sl" onclick="updateSigStatus(${s.id}, 'SL')">🛑 SL</button>
+          <button class="btn-status close" onclick="updateSigStatus(${s.id}, 'CLOSE')">⚠️ Close</button>
+          <button class="btn-status del" onclick="deleteSignal(${s.id})">🗑️</button>
+        </div>
+      </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+
+  updateStats();
+}
+
+function updateStats() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  
+  const dayOfWeek = now.getDay() || 7;
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1).getTime();
+  
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+
+  let minTime = 0;
+  if (currentTimeframe === 'TODAY') minTime = startOfToday;
+  else if (currentTimeframe === 'WEEK') minTime = startOfWeek;
+  else if (currentTimeframe === 'MONTH') minTime = startOfMonth;
+  else if (currentTimeframe === 'YEAR') minTime = startOfYear;
+
+  const periodSignals = signalsData.filter(s => (s.timestamp || s.id) >= minTime);
+
+  const wins = periodSignals.filter(s => s.status === 'TP').length;
+  const losses = periodSignals.filter(s => s.status === 'SL').length;
+  const closedTotal = wins + losses;
+  
+  const winRate = closedTotal > 0 ? Math.round((wins / closedTotal) * 100) : 0;
+  
+  let totalPips = 0;
+  let totalProfitUsd = 0;
+
+  periodSignals.forEach(s => {
+    if(s.pips) totalPips += parseFloat(s.pips) || 0;
+    if(s.profitUsd) totalProfitUsd += parseFloat(s.profitUsd) || 0;
+  });
+
+  document.getElementById('stat-wins-losses').innerText = `${wins} / ${losses}`;
+  document.getElementById('stat-winrate').innerText = `${winRate}%`;
+  
+  const pipsEl = document.getElementById('stat-pips');
+  pipsEl.innerText = `${totalPips >= 0 ? '+' : ''}${totalPips} Pips`;
+  pipsEl.style.color = totalPips >= 0 ? '#28C76F' : '#FF4D61';
+
+  const profitEl = document.getElementById('stat-profit-usd');
+  profitEl.innerText = `${totalProfitUsd >= 0 ? '+$' : '-$'}${Math.abs(totalProfitUsd).toFixed(2)}`;
+  profitEl.style.color = totalProfitUsd >= 0 ? '#28C76F' : '#FF4D61';
+}
+
+function renderAdminUsersList() {
+  const container = document.getElementById('users-list-container');
+  if(!container) return;
+  container.innerHTML = '';
+
+  const userList = Object.values(usersData).filter(u => u && typeof u === 'object' && u.username);
+  if(userList.length === 0) {
+    container.innerHTML = '<p style="font-size:12px; color:#A0AEC0;">No registered users yet.</p>';
+    return;
+  }
+
+  userList.forEach(u => {
+    const isVip = u.status === 'VIP';
+    const html = `
+      <div class="user-item">
+        <div>
+          <div class="user-name">👤 ${u.username}</div>
+          <span class="user-status-badge ${isVip ? 'vip' : 'free'}">${isVip ? '💎 VIP' : 'FREE'}</span>
+        </div>
+        <button class="btn-toggle-vip ${isVip ? 'revoke' : 'grant'}" onclick="toggleUserVip('${u.username}', '${isVip ? 'FREE' : 'VIP'}')">
+          ${isVip ? 'Remove VIP' : 'Set VIP 💎'}
+        </button>
+      </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+function toggleUserVip(username, newStatus) {
+  const safeUser = cleanKey(username);
+  if(safeUser) {
+    db.ref('users/' + safeUser).update({ status: newStatus });
+  }
+}
+
+function publishNews() {
+  const title = document.getElementById('adm-news-title').value;
+  const content = document.getElementById('adm-news-content').value;
+  if(!title) return;
+
+  const id = Date.now();
+  db.ref('news/' + id).set({ id, title, content });
+  document.getElementById('adm-news-title').value = '';
+  document.getElementById('adm-news-content').value = '';
+}
+
+function renderNews() {
+  const c = document.getElementById('news-container'); c.innerHTML = '';
+  newsData.slice().reverse().forEach(n => {
+    c.insertAdjacentHTML('beforeend', `<div class="news-card"><div class="news-title">${n.title}</div><div class="news-text">${n.content.replace(/\n/g, '<br>')}</div></div>`);
+  });
+}
+
+function publishProduct() {
+  const title = document.getElementById('adm-prod-title').value;
+  const price = document.getElementById('adm-prod-price').value;
+  if(!title) return;
+
+  const id = Date.now();
+  db.ref('store/' + id).set({ id, title, price });
+  document.getElementById('adm-prod-title').value = '';
+  document.getElementById('adm-prod-price').value = '';
+}
+
+function renderStore() {
+  const c = document.getElementById('store-container'); c.innerHTML = '';
+  storeData.slice().reverse().forEach(p => {
+    c.insertAdjacentHTML('beforeend', `
+      <div class="store-card">
+        <div style="font-size: 32px;">🐦‍🔥</div>
+        <div style="flex:1;">
+          <div class="store-title">${p.title}</div>
+          <div class="store-price">${p.price}</div>
+          <button class="store-btn" onclick="window.open('https://wa.me/96171285759?text=مرحبا،%20مهتم%20بشراء%20المنتج', '_blank')">Purchase Now</button>
+        </div>
+      </div>`);
+  });
+}
+
+function calculateLotSize() {
+  const bal = parseFloat(document.getElementById('calc-bal').value) || 0;
+  const risk = parseFloat(document.getElementById('calc-risk').value) || 0;
+  const sl = parseFloat(document.getElementById('calc-sl').value) || 1;
+
+  const riskUSD = (bal * (risk / 100));
+  const lotSize = (riskUSD / (sl * 10)).toFixed(2);
+
+  document.getElementById('calc-risk-usd').innerText = riskUSD.toFixed(2);
+  document.getElementById('calc-out').innerText = (lotSize > 0 ? lotSize : 0.01) + ' Lot';
+}
+
+function switchTab(tab) {
+  ['home', 'chart', 'news', 'store', 'more'].forEach(t => {
+    document.getElementById('tab-' + t).classList.add('hidden');
+    document.getElementById('btn-' + t).classList.remove('active');
+  });
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.getElementById('btn-' + tab).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleSettingsMenu(element, dropdownId) {
+  const content = document.getElementById(dropdownId);
+  if (content.classList.contains('show')) {
+    content.classList.remove('show');
+    element.classList.remove('open');
+  } else {
+    content.classList.add('show');
+    element.classList.add('open');
+  }
+}
+</script>
+</body>
+</html>
